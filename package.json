@@ -1,7 +1,12 @@
 {
-  "name": "spotlight-app",
+  "name": "focushub",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "author": "Mohit Yadav",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mohityadav55199/FocusHub.git"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",

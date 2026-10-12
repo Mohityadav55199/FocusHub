@@ -1,7 +1,7 @@
-# ✨ Spotlight — Real-Time Social Media App 🚀
+# ✨ FocusHub — Real-Time Social Media App 🚀
 
 <p align="center">
-  <img src="/assets/images/screenshot-for-readme.png" alt="Spotlight App Preview" width="850"/>
+  <img src="/assets/images/screenshot-for-readme.png" alt="FocusHub App Preview" width="850"/>
 </p>
 
 <p align="center">
@@ -19,11 +19,11 @@
 
 ## 🌟 Overview
 
-**Spotlight** is a full-stack, real-time social media application designed to work seamlessly across **Android, iOS, and Web** from a single codebase.
+**FocusHub** is a full-stack, real-time social media application designed to work seamlessly across **Android, iOS, and Web** from a single codebase.
 
 The application provides a complete social experience including authentication, posts, likes, comments, follows, bookmarks, notifications, and user profiles — with changes synchronized in real time using **Convex**.
 
-Built with **React Native + Expo**, Spotlight demonstrates how modern cross-platform applications can be developed using TypeScript/JavaScript without writing separate native Android or iOS code.
+Built with **React Native + Expo**, FocusHub demonstrates how modern cross-platform applications can be developed using TypeScript/JavaScript without writing separate native Android or iOS code.
 
 ---
 
@@ -108,7 +108,7 @@ Built with **React Native + Expo**, Spotlight demonstrates how modern cross-plat
 
 ## 🧠 Architecture
 
-Spotlight follows a modern full-stack architecture:
+FocusHub follows a modern full-stack architecture:
 
 ```text
 ┌──────────────────────────────┐
@@ -140,7 +140,7 @@ Convex handles the application's backend and real-time data synchronization, whi
 ## 📁 Project Structure
 
 ```text
-Spotlight/
+FocusHub/
 ├── app/
 │   ├── (auth)/
 │   ├── (tabs)/
@@ -193,8 +193,8 @@ Make sure the environment variables are correctly configured before starting the
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/spotlight.git
-cd spotlight
+git clone https://github.com/Mohityadav55199/FocusHub.git
+cd FocusHub
 ```
 
 ### 2. Install dependencies
@@ -238,7 +238,7 @@ Make sure your computer and mobile device are connected to the same network.
 
 ## 💡 Key Concepts Demonstrated
 
-Spotlight goes beyond basic UI development and demonstrates several production-oriented concepts:
+FocusHub goes beyond basic UI development and demonstrates several production-oriented concepts:
 
 * Real-time database synchronization
 * Authentication and authorization
@@ -281,8 +281,8 @@ Contributions, suggestions, and improvements are welcome.
 ### Fork the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/spotlight.git
-cd spotlight
+git clone https://github.com/Mohityadav55199/FocusHub.git
+cd FocusHub
 ```
 
 Create a new branch:
@@ -318,8 +318,8 @@ If you plan to use the project commercially, review the licenses of all third-pa
 
 ## ⭐ Support
 
-If you found **Spotlight** useful, consider giving the repository a ⭐ on GitHub.
+If you found **FocusHub** useful, consider giving the repository a ⭐ on GitHub.
 
 <p align="center">
-  Built with ❤️ using React Native, Expo, Convex & Clerk
+  Built with ❤️ by <a href="https://github.com/Mohityadav55199">Mohit Yadav</a> using React Native, Expo, Convex & Clerk
 </p>
