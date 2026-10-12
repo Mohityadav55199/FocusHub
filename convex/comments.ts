@@ -51,8 +51,8 @@ export const getComments = query({
         return {
           ...comment,
           user: {
-            fullname: user!.fullname,
-            image: user!.image,
+            fullname: user?.fullname || "User",
+            image: user?.image || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop",
           },
         };
       })

@@ -21,7 +21,8 @@ export const getNotifications = query({
 
     const notificationsWithInfo = await Promise.all(
       notifications.map(async (notification) => {
-        const sender = (await ctx.db.get(notification.senderId))!;
+        const sender = await ctx.db.get(notification.senderId);
+        if (!sender) return null;
         let post = null;
         let comment = null;
 
@@ -46,6 +47,6 @@ export const getNotifications = query({
       })
     );
 
-    return notificationsWithInfo;
+    return notificationsWithInfo.filter((n) => n !== null);
   },
 });

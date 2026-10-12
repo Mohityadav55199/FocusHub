@@ -49,6 +49,6 @@ export const getBookmarkedPosts = query({
         return post;
       })
     );
-    return bookmarksWithInfo;
+    return bookmarksWithInfo.filter((post): post is NonNullable<typeof post> => post !== null);
   },
 });
