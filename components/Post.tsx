@@ -2,12 +2,13 @@ import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { styles } from "@/styles/feed.styles";
+import { styles as profileStyles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Modal } from "react-native";
 import CommentsModal from "./CommentsModal";
 import { formatDistanceToNow } from "date-fns";
 import { useUser } from "@clerk/clerk-expo";
@@ -33,9 +34,11 @@ type PostProps = {
 export default function Post({ post }: PostProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
-
   const [showComments, setShowComments] = useState(false);
+  const [isAvatarModalVisible, setIsAvatarModalVisible] = useState(false);
+  const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop";
 
+  const router = useRouter();
   const { user } = useUser();
 
   const currentUser = useQuery(api.users.getUserByClerkId, user ? { clerkId: user.id } : "skip");
@@ -66,27 +69,35 @@ export default function Post({ post }: PostProps) {
     }
   };
 
+  const navigateToProfile = () => {
+    if (currentUser?._id === post.author._id) {
+      router.push("/(tabs)/profile");
+    } else {
+      router.push(`/user/${post.author._id}`);
+    }
+  };
+
   return (
     <View style={styles.post}>
       {/* POST HEADER */}
       <View style={styles.postHeader}>
-        <Link
-          href={
-            currentUser?._id === post.author._id ? "/(tabs)/profile" : `/user/${post.author._id}`
-          }
-          asChild
-        >
-          <TouchableOpacity style={styles.postHeaderLeft}>
+        <View style={styles.postHeaderLeft}>
+          <TouchableOpacity
+            onPress={() => setIsAvatarModalVisible(true)}
+            activeOpacity={0.8}
+          >
             <Image
-              source={post.author.image}
+              source={post.author.image || defaultAvatar}
               style={styles.postAvatar}
               contentFit="cover"
               transition={200}
               cachePolicy="memory-disk"
             />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={navigateToProfile} activeOpacity={0.7}>
             <Text style={styles.postUsername}>{post.author.username}</Text>
           </TouchableOpacity>
-        </Link>
+        </View>
 
         {/* if i'm the owner of the post, show the delete button  */}
         {post.author._id === currentUser?._id ? (
@@ -160,6 +171,48 @@ export default function Post({ post }: PostProps) {
         visible={showComments}
         onClose={() => setShowComments(false)}
       />
+
+      {/* AVATAR FULL VIEW MODAL */}
+      <Modal
+        visible={isAvatarModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setIsAvatarModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={profileStyles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setIsAvatarModalVisible(false)}
+        >
+          <View
+            style={profileStyles.postDetailContainer}
+            onStartShouldSetResponder={() => true}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
+            <View style={profileStyles.postDetailHeader}>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsAvatarModalVisible(false);
+                  navigateToProfile();
+                }}
+              >
+                <Text style={{ color: COLORS.primary, fontWeight: "600", fontSize: 16 }}>
+                  @{post.author.username}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setIsAvatarModalVisible(false)}>
+                <Ionicons name="close" size={24} color={COLORS.white} />
+              </TouchableOpacity>
+            </View>
+            <Image
+              source={post.author.image || defaultAvatar}
+              cachePolicy="memory-disk"
+              style={profileStyles.postDetailImage}
+              contentFit="cover"
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

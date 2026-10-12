@@ -52,23 +52,40 @@ export default function CreateScreen() {
       setIsSharing(true);
       const uploadUrl = await generateUploadUrl();
 
-      const uploadResult = await FileSystem.uploadAsync(uploadUrl, selectedImage, {
-        httpMethod: "POST",
-        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-        mimeType: "image/jpeg",
-      });
+      let storageId: string;
 
-      if (uploadResult.status !== 200) throw new Error("Upload failed");
+      if (Platform.OS === "web") {
+        const response = await fetch(selectedImage);
+        const blob = await response.blob();
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": blob.type || "image/jpeg" },
+          body: blob,
+        });
 
-      const { storageId } = JSON.parse(uploadResult.body);
-      await createPost({ storageId, caption });
+        if (!uploadResponse.ok) throw new Error("Upload failed on web");
+        const json = await uploadResponse.json();
+        storageId = json.storageId;
+      } else {
+        const uploadResult = await FileSystem.uploadAsync(uploadUrl, selectedImage, {
+          httpMethod: "POST",
+          uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+          mimeType: "image/jpeg",
+        });
+
+        if (uploadResult.status !== 200) throw new Error("Upload failed on native");
+        const json = JSON.parse(uploadResult.body);
+        storageId = json.storageId;
+      }
+
+      await createPost({ storageId: storageId as any, caption });
 
       setSelectedImage(null);
       setCaption("");
 
       router.push("/(tabs)");
     } catch (error) {
-      console.log("Error sharing post");
+      console.error("Error sharing post:", error);
     } finally {
       setIsSharing(false);
     }

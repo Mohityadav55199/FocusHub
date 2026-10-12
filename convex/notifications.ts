@@ -3,7 +3,15 @@ import { getAuthenticatedUser } from "./users";
 
 export const getNotifications = query({
   handler: async (ctx) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!currentUser) return [];
 
     const notifications = await ctx.db
       .query("notifications")

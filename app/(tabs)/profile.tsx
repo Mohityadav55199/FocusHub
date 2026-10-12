@@ -25,11 +25,15 @@ import {
 export default function Profile() {
   const { signOut, userId } = useAuth();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isAvatarModalVisible, setIsAvatarModalVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const currentUser = useQuery(api.users.getUserByClerkId, userId ? { clerkId: userId } : "skip");
 
+  const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop";
+
   const [editedProfile, setEditedProfile] = useState({
-    fullname: currentUser?.fullname || "",
-    bio: currentUser?.bio || "",
+    fullname: "",
+    bio: "",
   });
 
   const [selectedPost, setSelectedPost] = useState<Doc<"posts"> | null>(null);
@@ -37,9 +41,30 @@ export default function Profile() {
 
   const updateProfile = useMutation(api.users.updateProfile);
 
+  const handleOpenEditModal = () => {
+    if (currentUser) {
+      setEditedProfile({
+        fullname: currentUser.fullname || "",
+        bio: currentUser.bio || "",
+      });
+    }
+    setIsEditModalVisible(true);
+  };
+
   const handleSaveProfile = async () => {
-    await updateProfile(editedProfile);
-    setIsEditModalVisible(false);
+    if (!editedProfile.fullname.trim()) return;
+    try {
+      setIsSaving(true);
+      await updateProfile({
+        fullname: editedProfile.fullname.trim(),
+        bio: editedProfile.bio.trim() || undefined,
+      });
+      setIsEditModalVisible(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!currentUser || posts === undefined) return <Loader />;
@@ -62,14 +87,18 @@ export default function Profile() {
         <View style={styles.profileInfo}>
           {/* AVATAR & STATS */}
           <View style={styles.avatarAndStats}>
-            <View style={styles.avatarContainer}>
+            <TouchableOpacity
+              style={styles.avatarContainer}
+              onPress={() => setIsAvatarModalVisible(true)}
+              activeOpacity={0.8}
+            >
               <Image
-                source={currentUser.image}
+                source={currentUser.image || defaultAvatar}
                 style={styles.avatar}
                 contentFit="cover"
                 transition={200}
               />
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
@@ -91,7 +120,7 @@ export default function Profile() {
           {currentUser.bio && <Text style={styles.bio}>{currentUser.bio}</Text>}
 
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.editButton} onPress={() => setIsEditModalVisible(true)}>
+            <TouchableOpacity style={styles.editButton} onPress={handleOpenEditModal}>
               <Text style={styles.editButtonText}>Edit Profile</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.shareButton}>
@@ -126,47 +155,58 @@ export default function Profile() {
         transparent={true}
         onRequestClose={() => setIsEditModalVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.modalContainer}
-          >
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Edit Profile</Text>
-                <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
-                  <Ionicons name="close" size={24} color={COLORS.white} />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editedProfile.fullname}
-                  onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, fullname: text }))}
-                  placeholderTextColor={COLORS.grey}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Bio</Text>
-                <TextInput
-                  style={[styles.input, styles.bioInput]}
-                  value={editedProfile.bio}
-                  onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, bio: text }))}
-                  multiline
-                  numberOfLines={4}
-                  placeholderTextColor={COLORS.grey}
-                />
-              </View>
-
-              <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
-                <Text style={styles.saveButtonText}>Save Changes</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalContainer}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPress={() => setIsEditModalVisible(false)}
+          />
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                <Ionicons name="close" size={24} color={COLORS.white} />
               </TouchableOpacity>
             </View>
-          </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Name</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.fullname}
+                onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, fullname: text }))}
+                placeholder="Your full name"
+                placeholderTextColor={COLORS.grey}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Bio</Text>
+              <TextInput
+                style={[styles.input, styles.bioInput]}
+                value={editedProfile.bio}
+                onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, bio: text }))}
+                placeholder="Tell us about yourself"
+                placeholderTextColor={COLORS.grey}
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveButton, isSaving && { opacity: 0.7 }]}
+              onPress={handleSaveProfile}
+              disabled={isSaving}
+            >
+              <Text style={styles.saveButtonText}>
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* SELECTED IMAGE MODAL */}
@@ -176,10 +216,18 @@ export default function Profile() {
         transparent={true}
         onRequestClose={() => setSelectedPost(null)}
       >
-        <View style={styles.modalBackdrop}>
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setSelectedPost(null)}
+        >
           {selectedPost && (
-            <View style={styles.postDetailContainer}>
-              <View style={styles.postDetailHeader}>
+            <View
+              style={styles.postDetailContainer}
+              onStartShouldSetResponder={() => true}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <View style={[styles.postDetailHeader, { justifyContent: "flex-end" }]}>
                 <TouchableOpacity onPress={() => setSelectedPost(null)}>
                   <Ionicons name="close" size={24} color={COLORS.white} />
                 </TouchableOpacity>
@@ -189,10 +237,46 @@ export default function Profile() {
                 source={selectedPost.imageUrl}
                 cachePolicy={"memory-disk"}
                 style={styles.postDetailImage}
+                contentFit="cover"
               />
             </View>
           )}
-        </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* AVATAR FULL VIEW MODAL */}
+      <Modal
+        visible={isAvatarModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setIsAvatarModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setIsAvatarModalVisible(false)}
+        >
+          <View
+            style={styles.postDetailContainer}
+            onStartShouldSetResponder={() => true}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
+            <View style={styles.postDetailHeader}>
+              <Text style={{ color: COLORS.white, fontWeight: "600", fontSize: 16 }}>
+                {currentUser.fullname || currentUser.username}
+              </Text>
+              <TouchableOpacity onPress={() => setIsAvatarModalVisible(false)}>
+                <Ionicons name="close" size={24} color={COLORS.white} />
+              </TouchableOpacity>
+            </View>
+            <Image
+              source={currentUser.image || defaultAvatar}
+              cachePolicy="memory-disk"
+              style={styles.postDetailImage}
+              contentFit="cover"
+            />
+          </View>
+        </TouchableOpacity>
       </Modal>
     </View>
   );

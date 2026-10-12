@@ -82,8 +82,8 @@ export const styles = StyleSheet.create({
     color: COLORS.white,
   },
   postImage: {
-    width: width,
-    height: width,
+    width: "100%",
+    aspectRatio: 1,
   },
   postActions: {
     flexDirection: "row",
@@ -216,5 +216,33 @@ export const styles = StyleSheet.create({
   centered: {
     justifyContent: "center",
     alignItems: "center",
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  postDetailContainer: {
+    backgroundColor: COLORS.background,
+    maxWidth: 480,
+    width: "100%",
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: COLORS.surface,
+  },
+  postDetailHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    padding: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.surface,
+  },
+  postDetailImage: {
+    width: "100%",
+    aspectRatio: 1,
   },
 });

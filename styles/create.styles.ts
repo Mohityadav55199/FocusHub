@@ -64,8 +64,8 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
   },
   imageSection: {
-    width: width,
-    height: width,
+    width: "100%",
+    aspectRatio: 1,
     backgroundColor: COLORS.surface,
     justifyContent: "center",
     alignItems: "center",

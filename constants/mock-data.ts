@@ -31,20 +31,8 @@ export const STORIES = [
   },
   {
     id: "6",
-    username: "jane.d",
-    avatar: "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?w=400&h=400&fit=crop",
-    hasStory: true,
-  },
-  {
-    id: "7",
     username: "claudia",
-    avatar: "https://images.unsplash.com/photo-1701615004837-40d8573b6652?w=400&h=400&fit=crop",
-    hasStory: true,
-  },
-  {
-    id: "8",
-    username: "mike.rs",
-    avatar: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop",
+    avatar: "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?w=400&h=400&fit=crop",
     hasStory: true,
   },
 ];

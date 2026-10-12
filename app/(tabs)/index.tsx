@@ -31,7 +31,10 @@ export default function Index() {
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>FocusHub</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Ionicons name="leaf" size={26} color={COLORS.primary} />
+          <Text style={styles.headerTitle}>FocusHub</Text>
+        </View>
         <TouchableOpacity onPress={() => signOut()}>
           <Ionicons name="log-out-outline" size={24} color={COLORS.white} />
         </TouchableOpacity>

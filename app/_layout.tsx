@@ -5,7 +5,7 @@ import { SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 import { useCallback, useEffect } from "react";
 import * as NavigationBar from "expo-navigation-bar";
-import { Platform } from "react-native";
+import { Platform, View, StyleSheet } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
 
@@ -31,11 +31,39 @@ export default function RootLayout() {
   return (
     <ClerkAndConvexProvider>
       <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} onLayout={onLayoutRootView}>
-          <InitialLayout />
+        <SafeAreaView style={styles.safeArea} onLayout={onLayoutRootView}>
+          <View style={styles.webContainer}>
+            <InitialLayout />
+          </View>
         </SafeAreaView>
       </SafeAreaProvider>
       <StatusBar style="light" />
     </ClerkAndConvexProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#000",
+    ...(Platform.OS === "web"
+      ? {
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+        }
+      : {}),
+  },
+  webContainer: {
+    flex: 1,
+    width: "100%",
+    ...(Platform.OS === "web"
+      ? {
+          maxWidth: 480,
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          borderColor: "#1f1f1f",
+        }
+      : {}),
+  },
+});

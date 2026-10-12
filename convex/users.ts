@@ -47,18 +47,79 @@ export const getUserByClerkId = query({
   },
 });
 
+export const getUserByUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("username"), args.username))
+      .first();
+
+    return user;
+  },
+});
+
 export const updateProfile = mutation({
   args: {
     fullname: v.string(),
     bio: v.optional(v.string()),
+    image: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
 
-    await ctx.db.patch(currentUser._id, {
+    const updateFields: any = {
       fullname: args.fullname,
       bio: args.bio,
+    };
+    if (args.image) {
+      updateFields.image = args.image;
+    }
+
+    await ctx.db.patch(currentUser._id, updateFields);
+  },
+});
+
+export const ensureUser = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop";
+
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (existingUser) {
+      if (!existingUser.image) {
+        const fallback = (identity as any).pictureUrl || defaultAvatar;
+        await ctx.db.patch(existingUser._id, { image: fallback });
+      }
+      return existingUser;
+    }
+
+    const email = identity.email || "";
+    const fullname = identity.name || (email ? email.split("@")[0] : "User");
+    const username =
+      (identity as any).nickname ||
+      (identity as any).preferredUsername ||
+      (email ? email.split("@")[0] : "user");
+    const image = (identity as any).pictureUrl || defaultAvatar;
+
+    const newUserId = await ctx.db.insert("users", {
+      username,
+      fullname,
+      email,
+      image,
+      clerkId: identity.subject,
+      followers: 0,
+      following: 0,
+      posts: 0,
     });
+
+    return await ctx.db.get(newUserId);
   },
 });
 
@@ -66,10 +127,34 @@ export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new Error("Unauthorized");
 
-  const currentUser = await ctx.db
+  let currentUser = await ctx.db
     .query("users")
     .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
     .first();
+
+  if (!currentUser) {
+    if ("insert" in ctx.db) {
+      const email = identity.email || "";
+      const fullname = identity.name || (email ? email.split("@")[0] : "User");
+      const username =
+        (identity as any).nickname ||
+        (identity as any).preferredUsername ||
+        (email ? email.split("@")[0] : "user");
+      const image = (identity as any).pictureUrl || "";
+
+      const newUserId = await (ctx as MutationCtx).db.insert("users", {
+        username,
+        fullname,
+        email,
+        image,
+        clerkId: identity.subject,
+        followers: 0,
+        following: 0,
+        posts: 0,
+      });
+      currentUser = await ctx.db.get(newUserId);
+    }
+  }
 
   if (!currentUser) throw new Error("User not found");
 
@@ -79,17 +164,27 @@ export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
 export const getUserProfile = query({
   args: { id: v.id("users") },
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.id);
-    if (!user) throw new Error("User not found");
-
-    return user;
+    try {
+      const user = await ctx.db.get(args.id);
+      return user;
+    } catch {
+      return null;
+    }
   },
 });
 
 export const isFollowing = query({
   args: { followingId: v.id("users") },
   handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return false;
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!currentUser) return false;
 
     const follow = await ctx.db
       .query("follows")

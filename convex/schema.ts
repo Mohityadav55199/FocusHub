@@ -17,7 +17,7 @@ export default defineSchema({
   posts: defineTable({
     userId: v.id("users"),
     imageUrl: v.string(),
-    storageId: v.id("_storage"), // will be needed when we want to delete a post
+    storageId: v.optional(v.id("_storage")), // optional for seed/external posts
     caption: v.optional(v.string()),
     likes: v.number(),
     comments: v.number(),

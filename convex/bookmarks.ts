@@ -26,7 +26,15 @@ export const toggleBookmark = mutation({
 
 export const getBookmarkedPosts = query({
   handler: async (ctx) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!currentUser) return [];
 
     // get all bookmarks of the current user
     const bookmarks = await ctx.db
