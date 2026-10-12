@@ -209,9 +209,15 @@ Create `.env` in the project root and add your Clerk and Convex credentials.
 
 ### 4. Start the development server
 
+Start both frontend and backend concurrently:
+
 ```bash
-npx expo start
+npm run dev
 ```
+
+Or run them individually:
+* **Frontend (Expo):** `npm start`
+* **Backend (Convex):** `npm run convex:dev`
 
 You can then run the application using:
 
